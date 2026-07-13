@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employee Attrition Predictor</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    padding: 40px 16px;
+    color: #e6eef8;
+    background: linear-gradient(180deg,#071135 0%, #0f172a 55%);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .card {
+    max-width: 760px;
+    margin: 0 auto;
+    background: rgba(255,255,255,0.04);
+    border-radius: 16px;
+    padding: 32px 36px 40px;
+    box-shadow: 0 10px 30px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.04);
+    backdrop-filter: blur(6px);
+  }
+
+  h1 {
+    font-size: 24px;
+    margin-bottom: 6px;
+    color: #f8fafc;
+  }
+
+  p.subtitle {
+    color: #c7d2fe;
+    margin-top: 0;
+    margin-bottom: 26px;
+    font-size: 15px;
+  }
+
+  form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 18px;
+  }
+
+  .field { display: flex; flex-direction: column; }
+  .field.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #e6eef8;
+  }
+
+  input, select {
+    padding: 10px 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    font-size: 14px;
+    background: rgba(255,255,255,0.02);
+    color: #e6eef8;
+  }
+
+  input::placeholder{color:rgba(230,238,248,0.45)}
+
+  input:focus, select:focus {
+    outline: none;
+    box-shadow: 0 6px 20px rgba(99,102,241,0.12);
+    border-color: rgba(124,58,237,0.9);
+    background: rgba(255,255,255,0.03);
+  }
+
+  button {
+    grid-column: 1 / -1;
+    margin-top: 8px;
+    background: linear-gradient(90deg,#7c3aed,#06b6d4);
+    color: white;
+    border: none;
+    padding: 13px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 160ms cubic-bezier(.2,.9,.3,1), box-shadow 160ms;
+    box-shadow: 0 10px 28px rgba(7,12,50,0.45);
+  }
+
+  button:hover { transform: translateY(-3px); box-shadow: 0 18px 48px rgba(7,12,50,0.55); }
+
+  .result { margin-top: 28px; padding: 20px 22px; border-radius: 12px; font-size: 15px; }
+  .result.high { background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.16); }
+  .result.moderate { background: rgba(217,119,6,0.06); border: 1px solid rgba(217,119,6,0.12); }
+  .result.low { background: rgba(16,163,127,0.06); border: 1px solid rgba(16,163,127,0.12); }
+
+  .result h2 { margin: 0 0 6px; font-size: 18px; color:#f8fafc }
+  .result .big { font-size: 34px; font-weight:700; margin:8px 0 2px; color:#fff }
+
+  .badge { display:inline-block; padding:4px 12px; border-radius:999px; font-size:12px; font-weight:700; margin-bottom:8px; }
+  .badge.high { background: rgba(254,226,226,0.06); color:#fecaca }
+  .badge.moderate { background: rgba(255,243,199,0.04); color:#fef08a }
+  .badge.low { background: rgba(220,253,231,0.04); color:#bbf7d0 }
+
+  .bar-bg { background: rgba(255,255,255,0.04); border-radius:999px; height:10px; width:100%; margin-top:10px; overflow:hidden }
+  .bar-fill { height:100%; border-radius:999px }
+  .bar-fill.high { background: linear-gradient(90deg,#ef4444,#f97316) }
+  .bar-fill.moderate { background: linear-gradient(90deg,#f59e0b,#f97316) }
+  .bar-fill.low { background: linear-gradient(90deg,#10b981,#06b6d4) }
+
+  @media (max-width:720px){
+    .card{padding:20px;margin:18px}
+    form{grid-template-columns:1fr}
+    .title{font-size:20px}
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>🧑‍💼 Employee Attrition Predictor</h1>
+    <p class="subtitle">Enter the employee's details below to estimate their likelihood of leaving the company.</p>
+
+    <form action="/predict" method="post">
+      <div class="field">
+        <label>Age</label>
+        <input type="number" name="Age" min="18" max="70" required
+               value="{{ form_input.Age if form_input else 30 }}">
+      </div>
+
+      <div class="field">
+        <label>Monthly Income ($)</label>
+        <input type="number" name="MonthlyIncome" min="1000" step="1" required
+               value="{{ form_input.MonthlyIncome if form_input else 5000 }}">
+      </div>
+
+      <div class="field">
+        <label>Works Overtime?</label>
+        <select name="OverTime" required>
+          <option value="No" {{ 'selected' if form_input and form_input.OverTime == 'No' }}>No</option>
+          <option value="Yes" {{ 'selected' if form_input and form_input.OverTime == 'Yes' }}>Yes</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Job Level (1–5)</label>
+        <input type="number" name="JobLevel" min="1" max="5" required
+               value="{{ form_input.JobLevel if form_input else 2 }}">
+      </div>
+
+      <div class="field">
+        <label>Total Working Years</label>
+        <input type="number" name="TotalWorkingYears" min="0" max="45" required
+               value="{{ form_input.TotalWorkingYears if form_input else 8 }}">
+      </div>
+
+      <div class="field">
+        <label>Years At This Company</label>
+        <input type="number" name="YearsAtCompany" min="0" max="45" required
+               value="{{ form_input.YearsAtCompany if form_input else 5 }}">
+      </div>
+
+      <div class="field">
+        <label>Job Satisfaction (1–4)</label>
+        <input type="number" name="JobSatisfaction" min="1" max="4" required
+               value="{{ form_input.JobSatisfaction if form_input else 3 }}">
+      </div>
+
+      <div class="field">
+        <label>Environment Satisfaction (1–4)</label>
+        <input type="number" name="EnvironmentSatisfaction" min="1" max="4" required
+               value="{{ form_input.EnvironmentSatisfaction if form_input else 3 }}">
+      </div>
+
+      <div class="field">
+        <label>Work-Life Balance (1–4)</label>
+        <input type="number" name="WorkLifeBalance" min="1" max="4" required
+               value="{{ form_input.WorkLifeBalance if form_input else 3 }}">
+      </div>
+
+      <div class="field">
+        <label>Distance From Home (km)</label>
+        <input type="number" name="DistanceFromHome" min="0" max="50" required
+               value="{{ form_input.DistanceFromHome if form_input else 5 }}">
+      </div>
+
+      <button type="submit">Predict Attrition Risk</button>
+    </form>
+
+    {% if result %}
+    <div class="result {{ result.risk_level|lower }}">
+      <span class="badge {{ result.risk_level|lower }}">{{ result.risk_level }} RISK</span>
+      <h2>Prediction: Will Leave? — {{ result.prediction }}</h2>
+      <div class="big">{{ result.probability }}%</div>
+      <div>estimated probability of attrition</div>
+      <div class="bar-bg">
+        <div class="bar-fill {{ result.risk_level|lower }}" style="width: {{ result.probability }}%;"></div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</body>
+</html>
