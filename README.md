@@ -1,4 +1,5 @@
-<img width="1037" height="855" alt="Screenshot 2026-08-11 125700" src="https://github.com/user-attachments/assets/76e9e842-692f-49ce-83fb-7bda32a12cf6" /># Employee Attrition Prediction
+
+# Employee Attrition Prediction
 
 A machine learning project that predicts whether an employee is likely to leave a company (attrition), based on IBM's HR Analytics Employee Attrition dataset. The project covers the full pipeline — exploratory data analysis, feature engineering, encoding, scaling, class-imbalance handling, model training/tuning, and evaluation — and ships a working **FastAPI web app** that serves live predictions from the trained model.
 
